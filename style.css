@@ -1,0 +1,113 @@
+:root{
+    --light-bg-primary: white;
+    --light-bg-secondary: #b4b7c6;
+    --light-font-primary: #333333;
+
+    --dark-bg-primary: #111111;
+    --dark-bg-secondary: #625d59ff;
+    --dark-font-primary: #fff8f0;
+
+
+    --grid-size: 5rem;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+body{
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-primary);
+    color: var(--font-primary);
+}
+
+body.darkmode{
+    --bg-primary: var(--dark-bg-primary);
+    --bg-secondary: var(--dark-bg-secondary);
+    --font-primary: var(--dark-font-primary);
+}
+
+body.lightmode{
+    --bg-secondary: var(--light-bg-primary);
+    --bg-secondary: var(--light-bg-secondary);
+    --font-primary: var(--light-font-primary);
+}
+
+/* styling the main layout */
+.header{
+    position: fixed;
+    top: 0rem;
+    left: 0rem;
+    right: 0rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-primary);
+    border-bottom: 0.4rem solid var(--bg-secondary);
+    height: max-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.game{
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.grid-container{
+    width: max-content;
+    height: max-content;
+    background: inherit;
+    /* border: 0.2rem dotted var(--bg-secondary); */
+    display: grid;
+    grid-template-columns: repeat(5, var(--grid-size));
+    grid-template-rows: repeat(6, var(--grid-size));
+    gap: 0.5rem;
+}
+
+.keyboard-container{
+    width: 10rem;
+    height: 10rem;
+    background: inherit;
+    border: 0.2rem dotted var(--bg-secondary);
+}
+
+/* header styling */
+.icon{
+    width: 2.3rem;
+    height: 2.3rem;
+}
+
+.icon svg{
+    width: 100%;
+    height: 100%;
+    
+}
+
+.icon svg path:nth-child(1){
+    stroke: var(--font-primary);
+    fill: var(--font-primary);
+    stroke-width: 0.1px;
+}
+
+.title{
+    flex: 2;
+    text-align: center;
+    font-size: 3rem;
+}
+
+/* grid styling */
+.letter{
+    border: 0.2rem solid var(--bg-secondary);
+    border-radius: 0.2rem;
+}
+
