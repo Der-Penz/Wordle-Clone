@@ -2,13 +2,21 @@
     --light-bg-primary: white;
     --light-bg-secondary: #b4b7c6;
     --light-font-primary: #333333;
+    --light-state-green: #07c92799;
+    --light-state-yellow: #eccc1299;
+    --light-state-grey: #2c2c2c99;
 
     --dark-bg-primary: #111111;
-    --dark-bg-secondary: #625d59ff;
+    --dark-bg-secondary: #625d59;
     --dark-font-primary: #fff8f0;
-
+    --dark-state-green: #1be60099;
+    --dark-state-yellow: #ffbb00d0;
+    --dark-state-grey: #2c2c2c99;
 
     --grid-size: 5rem;
+    --keyboard-gap: 0.5rem;
+    --key-height: 4rem;
+    --key-width: 3rem;
 }
 
 *{
@@ -28,12 +36,18 @@ body.darkmode{
     --bg-primary: var(--dark-bg-primary);
     --bg-secondary: var(--dark-bg-secondary);
     --font-primary: var(--dark-font-primary);
+    --state-green: var(--dark-state-green);
+    --state-yellow: var(--dark-state-yellow);
+    --state-grey: var(--dark-state-grey);
 }
 
 body.lightmode{
-    --bg-secondary: var(--light-bg-primary);
+    --bg-primary: var(--light-bg-primary);
     --bg-secondary: var(--light-bg-secondary);
     --font-primary: var(--light-font-primary);
+    --state-green: var(--light-state-green);
+    --state-yellow: var(--light-state-yellow);
+    --state-grey: var(--light-state-grey);
 }
 
 /* styling the main layout */
@@ -50,6 +64,7 @@ body.lightmode{
     align-items: center;
     justify-content: center;
     gap: 1rem;
+    z-index: 100;
 }
 
 .game{
@@ -60,14 +75,13 @@ body.lightmode{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 3rem;
 }
 
 .grid-container{
     width: max-content;
     height: max-content;
     background: inherit;
-    /* border: 0.2rem dotted var(--bg-secondary); */
     display: grid;
     grid-template-columns: repeat(5, var(--grid-size));
     grid-template-rows: repeat(6, var(--grid-size));
@@ -75,10 +89,14 @@ body.lightmode{
 }
 
 .keyboard-container{
-    width: 10rem;
-    height: 10rem;
+    width: max-content;
+    height: max-content;
     background: inherit;
-    border: 0.2rem dotted var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--keyboard-gap);
 }
 
 /* header styling */
@@ -109,5 +127,54 @@ body.lightmode{
 .letter{
     border: 0.2rem solid var(--bg-secondary);
     border-radius: 0.2rem;
+    position: relative;
 }
+
+.letter::before{
+    content: attr(data);
+    position: absolute;
+    inset: 0.1rem;
+    z-index: 20;
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--font-primary);
+    text-align: center;
+    line-height: calc(var(--grid-size) - 0.1rem - 0.2rem);
+}
+
+/* keyboard styling */
+.keyboard-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: var(--keyboard-gap);
+
+}
+
+.key{
+    position: relative;
+    width: var(--key-width);
+    height: var(--key-height);
+    text-transform: uppercase;
+    z-index: 20;
+    background-color: var(--bg-secondary);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--font-primary);
+    text-align: center;
+    line-height: calc(var(--key-height) - 0.1rem - 0.2rem);
+    border-radius: 0.2rem;
+    border: none;
+}
+
+.key.special{
+    width: max-content;
+    padding: 0rem 0.7rem;
+}
+
+.enter{
+    font-size: 1.7rem;
+}
+
 

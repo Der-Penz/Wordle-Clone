@@ -1,4 +1,4 @@
-[
+export const VALID_WORDS = [
     "aahed",
     "aalii",
     "aargh",
