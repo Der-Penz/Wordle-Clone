@@ -15,6 +15,7 @@ const keyboard = $(".key");
 const TO_GUESS = TARGET_WORDS[Math.floor(Math.random() * TARGET_WORDS.length)].toUpperCase();
 var gameEnded = false;
 
+var fullClear = false;
 var guessIndex = 0;
 var letterIndex = 0;
 var grid = [
@@ -45,35 +46,69 @@ function removeLetter(){
 }
 
 function setLetterOnUI(letter){
-    gridLetters[guessIndex * WORD_LENGTH + letterIndex].setAttribute("data", letter.toUpperCase());
+    let tile = $(gridLetters[guessIndex * WORD_LENGTH + letterIndex]);
+
+    $(tile).attr("data", letter.toUpperCase());
+    
+    if(letter == "")
+        return;
+    $(tile).addClass("filled");
+
+    setTimeout(() => {
+        $(tile).removeClass("filled");
+    }, 300);
 }
 
 function submitGuess(){
+    
+    let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
-    let guessedWord = "";
-
-    grid[guessIndex].forEach((letter,i) => guessedWord += letter);
-    if(!isValidWord(guessedWord)){
-        alert("NO VALID INPUT")
+    if(guessedWord.length < WORD_LENGTH){
+        shakeRow();
         return;
     }
 
+    if(!isValidWord(guessedWord)){
+        shakeRow();
+        return;
+    }
+
+    let availableLetters = {};
+    TO_GUESS.split("").forEach(char => {
+        availableLetters[char] = availableLetters[char] ? (availableLetters[char] + 1) : 1;
+    })
+
+    //first check the right ones
     grid[guessIndex].forEach((letter,i) =>{
         if(letter == TO_GUESS.charAt(i)){
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css("backgroundColor", "var(--state-green)");
+            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-green)",
+                                                              borderColor: "var(--state-green)",
+                                                              color: "var(--state-font)"});
             setKeyBoardColor(letter, "var(--state-green)", "green");
+
+            availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }
-        else if(TO_GUESS.includes(letter)){
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css("backgroundColor", "var(--state-yellow)");
+    });
+
+    //check the other ones after the on on the right spots to prevent bugs
+    grid[guessIndex].forEach((letter,i) =>{
+        if(letter == TO_GUESS.charAt(i)){}
+        else if(availableLetters[letter] > 0){
+            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-yellow)",
+                                                              borderColor: "var(--state-yellow)",
+                                                              color: "var(--state-font)"});
             setKeyBoardColor(letter, "var(--state-yellow)", "yellow");
+            availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }else{
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css("backgroundColor", "var(--state-grey)");
+            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-grey)",
+                                                              borderColor: "var(--state-grey)",
+                                                              color: "var(--state-font)"});
             setKeyBoardColor(letter, "var(--state-grey)", "grey");
         }
     });
 
     if(guessedWord == TO_GUESS){
-        alert("You Won");
+        jumpRow();
         gameEnded = true;
         return;
     }
@@ -82,7 +117,7 @@ function submitGuess(){
     letterIndex = 0;
 
     if(guessIndex == 6){
-        alert("You lost");
+        alert("You lost, word was " + TO_GUESS);
         gameEnded = true;
     }
 }
@@ -102,12 +137,17 @@ function handleKeyboardInput(pressedKey){
     if(gameEnded)
         return;
 
-    if (pressedKey.key === "Enter" && letterIndex == WORD_LENGTH) {
+    if (pressedKey.key === "Enter") {
         submitGuess()
         return;
     }
     if (pressedKey.key === "Backspace" || pressedKey.key === "Delete") {
-        removeLetter();
+        if(fullClear){
+            fullClear = false;
+            while(letterIndex != 0)
+                removeLetter();
+        }else
+            removeLetter();
         return;
     }
     
@@ -125,6 +165,38 @@ function isValidWord(word){
     return VALID_WORDS.includes(word.toLowerCase());
 }
 
+function getCurrentRow(){
+    return gridLetters.slice(guessIndex * WORD_LENGTH, guessIndex * WORD_LENGTH + WORD_LENGTH);
+}
+
+function jumpRow(){
+    $(gridLetters).removeClass("win");
+
+    let toShake = getCurrentRow();
+    setTimeout(() => {
+        $(toShake).each(function (i, element) {
+            $(element).css("animationDelay", (i * 0.1) + "s").addClass("win");
+        });
+    }, 1);
+
+    setTimeout(() => {
+        $(toShake).removeClass("win");
+    }, 700);
+}
+
+function shakeRow(){
+    $(gridLetters).removeClass("wrong");
+
+    let toShake = getCurrentRow();
+    setTimeout(() => {
+        $(toShake).addClass("wrong");
+    }, 1);
+
+    setTimeout(() => {
+        $(toShake).removeClass("wrong");
+    }, 600);
+}
+
 $("html").keyup(handleKeyboardInput);
 
 $(".key").on("click", function () {
@@ -138,6 +210,13 @@ $(".key").on("click", function () {
         return;
     }
 
-
     handleMouseInput($(this).text());
 });
+
+$("html").keydown(function (e) { 
+    if(e.key == "Control")
+        fullClear = true;
+});
+
+ScrollReveal().reveal('.letter', {interval: 30 });
+ScrollReveal().reveal('.key', {delay: 700, duration: 1000});

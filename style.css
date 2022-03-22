@@ -4,19 +4,23 @@
     --light-font-primary: #333333;
     --light-state-green: #07c92799;
     --light-state-yellow: #eccc1299;
-    --light-state-grey: #2c2c2c99;
+    --light-state-grey: #2c2c2c;
+    --light-state-font: #fff8f0;
 
     --dark-bg-primary: #111111;
     --dark-bg-secondary: #625d59;
     --dark-font-primary: #fff8f0;
     --dark-state-green: #1be60099;
     --dark-state-yellow: #ffbb00d0;
-    --dark-state-grey: #2c2c2c99;
+    --dark-state-grey: #2c2c2c;
+    --dark-state-font: #fff8f0;
 
     --grid-size: 5rem;
     --keyboard-gap: 0.5rem;
     --key-height: 4rem;
     --key-width: 3rem;
+    --tile-jump-duration: 0.3s;
+    --header-height: 3rem;
 }
 
 *{
@@ -25,11 +29,12 @@
     font-family: sans-serif;
 }
 
-body{
+body, html{
     width: 100vw;
     height: 100vh;
     background: var(--bg-primary);
     color: var(--font-primary);
+    overflow: hidden;
 }
 
 body.darkmode{
@@ -39,6 +44,7 @@ body.darkmode{
     --state-green: var(--dark-state-green);
     --state-yellow: var(--dark-state-yellow);
     --state-grey: var(--dark-state-grey);
+    --state-font: var(--dark-state-font);
 }
 
 body.lightmode{
@@ -48,18 +54,19 @@ body.lightmode{
     --state-green: var(--light-state-green);
     --state-yellow: var(--light-state-yellow);
     --state-grey: var(--light-state-grey);
+    --state-font: var(--light-state-font);
 }
 
 /* styling the main layout */
 .header{
-    position: fixed;
+    /* position: relative; */
     top: 0rem;
     left: 0rem;
-    right: 0rem;
+    width: calc(100vw - 2rem);
     padding: 0.5rem 1rem;
     background-color: var(--bg-primary);
     border-bottom: 0.4rem solid var(--bg-secondary);
-    height: max-content;
+    height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -68,8 +75,8 @@ body.lightmode{
 }
 
 .game{
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: calc(100vh - var(--header-height));
     background: var(--bg-primary);
     display: flex;
     flex-direction: column;
@@ -128,6 +135,7 @@ body.lightmode{
     border: 0.2rem solid var(--bg-secondary);
     border-radius: 0.2rem;
     position: relative;
+    color: var(--font-primary);
 }
 
 .letter::before{
@@ -137,9 +145,54 @@ body.lightmode{
     z-index: 20;
     font-size: 3rem;
     font-weight: 600;
-    color: var(--font-primary);
+    color: inherit;
     text-align: center;
     line-height: calc(var(--grid-size) - 0.1rem - 0.2rem);
+}
+
+.letter.filled{
+    animation: filled-tile var(--tile-jump-duration);
+}
+
+@keyframes filled-tile {
+    from, to{
+        transform: scale(1);
+    }
+    50%{
+        transform: scale(1.1);
+    }
+}
+
+.letter.wrong{
+    animation: wrong-tile 0.2s 3;
+}
+
+@keyframes wrong-tile {
+    from, to{
+        transform: translateX(0rem);
+    }
+    25%{
+        transform: translate(-0.3rem);
+    }
+    75%{
+        transform: translate(0.3rem);
+    }
+}
+
+.letter.win{
+    animation: win-tile 0.4s;
+}
+
+@keyframes win-tile {
+    from, to{
+        transform: translateY(0rem);
+    }
+    50%{
+        transform: translateY(-0.5rem);   
+    }
+    80%{
+        transform: translateY(0.1rem);   
+    }
 }
 
 /* keyboard styling */
@@ -166,6 +219,7 @@ body.lightmode{
     line-height: calc(var(--key-height) - 0.1rem - 0.2rem);
     border-radius: 0.2rem;
     border: none;
+    order: 2;
 }
 
 .key.special{
@@ -175,6 +229,26 @@ body.lightmode{
 
 .enter{
     font-size: 1.7rem;
+    order: 1;
+}
+
+.delete{
+    order: 3;
+}
+
+.switch .enter{
+    order: 3;
+}
+
+.switch .delete{
+    order: 1;
+}
+
+/* media queries for responsive design */
+@media screen and (max-height: 850px){ 
+    :root{
+        font-size: 10px;
+    }
 }
 
 
