@@ -32,7 +32,8 @@ function guessLetter(letter){
         return;
 
     grid[guessIndex][letterIndex] = letter.toUpperCase();
-    setLetterOnUI(letter);
+    setLetter(letter);
+
     letterIndex++;
 }
 
@@ -41,34 +42,56 @@ function removeLetter(){
         return;
 
     letterIndex--;
-    setLetterOnUI("");
+    setLetter("");
     grid[guessIndex][letterIndex] = "";
 }
 
-function setLetterOnUI(letter){
+function setLetter(letter){
     let tile = $(gridLetters[guessIndex * WORD_LENGTH + letterIndex]);
 
     $(tile).attr("data", letter.toUpperCase());
     
     if(letter == "")
         return;
-    $(tile).addClass("filled");
+    scaleLetter(tile);
+}
+
+function colorLetter(which, color){
+    let cssVar = `var(--state-${color})`;
+
+    flipLetter($(which).addClass("flip"));
 
     setTimeout(() => {
-        $(tile).removeClass("filled");
-    }, 300);
+        $(which).css({backgroundColor: cssVar,
+            borderColor: cssVar,
+            color: "var(--state-font)"});    
+    }, 200);
+
+    setTimeout(() => {
+        flipLetter($(which).removeClass("flip"));
+    }, 400);
+}
+
+function colorKey(whichLetter, color){
+    let cssVar = `var(--state-${color})`;
+
+    $(keyboard).each(function (index, element) {
+        if($(element).text().toUpperCase() != whichLetter)
+            return;
+        if($(element).attr("taged") == "grey" || $(element).attr("taged") == "green")
+            return;
+        if($(element).attr("taged") == "yellow" && color == "grey")
+            return;
+
+        $(element).css({backgroundColor: cssVar, color: "var(--state-font)"}).attr("taged", color);
+    });
 }
 
 function submitGuess(){
     
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
-    if(guessedWord.length < WORD_LENGTH){
-        shakeRow();
-        return;
-    }
-
-    if(!isValidWord(guessedWord)){
+    if(guessedWord.length < WORD_LENGTH || !isValidWord(guessedWord)){
         shakeRow();
         return;
     }
@@ -81,11 +104,8 @@ function submitGuess(){
     //first check the right ones
     grid[guessIndex].forEach((letter,i) =>{
         if(letter == TO_GUESS.charAt(i)){
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-green)",
-                                                              borderColor: "var(--state-green)",
-                                                              color: "var(--state-font)"});
-            setKeyBoardColor(letter, "var(--state-green)", "green");
-
+            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "green");
+            colorKey(letter, "green");
             availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }
     });
@@ -94,43 +114,32 @@ function submitGuess(){
     grid[guessIndex].forEach((letter,i) =>{
         if(letter == TO_GUESS.charAt(i)){}
         else if(availableLetters[letter] > 0){
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-yellow)",
-                                                              borderColor: "var(--state-yellow)",
-                                                              color: "var(--state-font)"});
-            setKeyBoardColor(letter, "var(--state-yellow)", "yellow");
+            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "yellow");
+            colorKey(letter, "yellow");
             availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }else{
-            $(gridLetters[guessIndex * WORD_LENGTH + i]).css({backgroundColor: "var(--state-grey)",
-                                                              borderColor: "var(--state-grey)",
-                                                              color: "var(--state-font)"});
-            setKeyBoardColor(letter, "var(--state-grey)", "grey");
+            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "grey");
+            colorKey(letter, "grey");
         }
     });
 
-    if(guessedWord == TO_GUESS){
-        jumpRow();
-        gameEnded = true;
-        return;
-    }
+    setTimeout(() => {
+        if(guessedWord == TO_GUESS){
+            jumpRow();
+            gameEnded = true;
+            return;
+        }
+
+        guessIndex++;
+        letterIndex = 0;
     
-    guessIndex++;
-    letterIndex = 0;
-
-    if(guessIndex == 6){
-        alert("You lost, word was " + TO_GUESS);
-        gameEnded = true;
-    }
-}
-
-function setKeyBoardColor(keyWithLetter, color, type){
-    $(keyboard).each(function (index, element) {
-        if($(element).text().toUpperCase() != keyWithLetter)
-            return;
-        if($(element).attr("taged") == "green" || $(element).attr("taged") == "grey")
-            return;
-        $(element).css("backgroundColor", color);
-        $(element).attr("taged", type);
-    });
+        if(guessIndex == 6){
+            alert("You lost, word was " + TO_GUESS);
+            gameEnded = true;
+        }
+    }, 600);
+    
+  
 }
 
 function handleKeyboardInput(pressedKey){
@@ -169,6 +178,22 @@ function getCurrentRow(){
     return gridLetters.slice(guessIndex * WORD_LENGTH, guessIndex * WORD_LENGTH + WORD_LENGTH);
 }
 
+function scaleLetter(tile){
+    $(tile).addClass("filled");
+
+    setTimeout(() => {
+        $(tile).removeClass("filled");
+    }, 300);
+}
+
+function flipLetter(tile){
+    $(tile).addClass("flip");
+
+    setTimeout(() => {
+        $(tile).removeClass("flip");
+    }, 600);
+}
+
 function jumpRow(){
     $(gridLetters).removeClass("win");
 
@@ -200,6 +225,9 @@ function shakeRow(){
 $("html").keyup(handleKeyboardInput);
 
 $(".key").on("click", function () {
+    if(gameEnded)
+        return;
+
     if($(this).hasClass("delete")){
         removeLetter();
         return;
@@ -213,6 +241,19 @@ $(".key").on("click", function () {
     handleMouseInput($(this).text());
 });
 
+//under construction
+//selectable index
+// $(".letter").on("click", function (e) {
+//     if(gameEnded)
+//         return;
+//     let i = $(e.target).attr("index");
+
+//     if(!(i <= guessIndex * WORD_LENGTH + WORD_LENGTH && i > guessIndex * WORD_LENGTH))
+//         return;
+    
+//     letterIndex = i - 1;
+// });
+
 $("html").keydown(function (e) { 
     if(e.key == "Control")
         fullClear = true;
@@ -220,3 +261,4 @@ $("html").keydown(function (e) {
 
 ScrollReveal().reveal('.letter', {interval: 30 });
 ScrollReveal().reveal('.key', {delay: 700, duration: 1000});
+
