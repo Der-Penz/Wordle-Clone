@@ -19,7 +19,10 @@
     --keyboard-gap: 0.5rem;
     --key-height: 4rem;
     --key-width: 3rem;
-    --tile-jump-duration: 0.3s;
+    --animation-jump-duration: 0.3s;
+    --animation-flip-duration: 0.3s;
+    --animation-wrong-duration: 0.2s;
+    --animation-wrong-iterations: 3;
     --header-height: 3rem;
 }
 
@@ -36,6 +39,10 @@ body, html{
     background: var(--bg-primary);
     color: var(--font-primary);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
 }
 
 body.darkmode{
@@ -60,25 +67,23 @@ body.lightmode{
 
 /* styling the main layout */
 .header{
-    /* position: relative; */
-    top: 0rem;
-    left: 0rem;
-    width: calc(100vw - 2rem);
-    padding: 0.5rem 1rem;
     background-color: var(--bg-primary);
-    border-bottom: 0.4rem solid var(--bg-secondary);
-    height: var(--header-height);
+    border-bottom: calc(0.2em + 0.2vw) solid var(--bg-secondary);
+    padding: 0.5em calc(0.2em + 1vw);
+    min-width: var(--header-height);
+    flex: 0 0 var(--header-height);
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: calc(0.2em + 1vw);
     z-index: 100;
 }
 
 .game{
-    width: 100vw;
-    height: calc(100vh - var(--header-height));
+    /* height: calc(100vh - var(--header-height)); */
     background: var(--bg-primary);
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -89,6 +94,7 @@ body.lightmode{
 .grid-container{
     width: max-content;
     height: max-content;
+    flex: 0 1 auto;
     background: inherit;
     display: grid;
     grid-template-columns: repeat(5, var(--grid-size));
@@ -108,60 +114,52 @@ body.lightmode{
 }
 
 /* header styling */
+.title{
+    flex: 1 1 auto;
+    text-align: center;
+    font-size: clamp(0.7rem, 0.7rem + 5vw, 3rem);
+}
+
 .icon{
-    width: 2.3rem;
-    height: 2.3rem;
+    flex: 0 1 2.3rem;
+    position: relative;
+    z-index: 110;
 }
 
 .icon svg{
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;   
 }
 
-.icon svg path:nth-child(1){
-    stroke: var(--font-primary);
+.icon svg path{
     fill: var(--font-primary);
-    stroke-width: 0.1px;
+    stroke-width: 0rem;
+    transition: fill 0.25s;
 }
 
-.title{
-    flex: 2;
-    text-align: center;
-    font-size: 3rem;
+.icon:hover svg path,
+.icon:focus svg path{
+    fill: var(--bg-secondary);
 }
 
-.theme-switch{
-    width: 2.3rem;
-    height: 2.3rem;
-    position: relative;
-}
-
-.theme-switch input{
+.icon input[type="checkbox"]{
     position: absolute;
-    inset: 0rem;
-    appearance: none;
-
-}
-
-.theme-switch div svg{
     width: 100%;
     height: 100%;
+    opacity: 0;
 }
 
-.theme-switch input + div .moon{
-    display: block;
-}
-
-.theme-switch input + div .sun{
-    display: none;
-}
-
-.theme-switch input:checked + div .moon{
-    display: none;
-}
-
-.theme-switch input:checked + div .sun{
+.icon input[type="checkbox"] + svg .moon,
+.icon input[type="checkbox"]:checked + svg .sun{
     display: unset;
+}
+
+.icon input[type="checkbox"] + svg .sun,
+.icon input[type="checkbox"]:checked + svg .moon{
+    display: none;
 }
 
 /* grid styling */
@@ -184,21 +182,24 @@ body.lightmode{
     line-height: calc(var(--grid-size) - 0.1rem - 0.2rem);
 }
 
-.letter.filled{
-    animation: filled-tile var(--tile-jump-duration);
+.letter.filled,
+.key.filled{
+    animation: filled-tile var(--animation-jump-duration);
 }
 
 @keyframes filled-tile {
     from, to{
         transform: scale(1);
+        opacity: 1;
     }
     50%{
         transform: scale(1.1);
+        opacity: 0.8;
     }
 }
 
 .letter.wrong{
-    animation: wrong-tile 0.2s 3;
+    animation: wrong-tile var(--animation-wrong-duration) var(--animation-wrong-iterations);
 }
 
 @keyframes wrong-tile {
@@ -218,7 +219,7 @@ body.lightmode{
 }
 
 .letter.flip{
-    animation: flip-tile 0.4s;
+    animation: flip-tile var(--animation-flip-duration);
 }
 
 @keyframes flip-tile {
@@ -249,7 +250,6 @@ body.lightmode{
     justify-content: center;
     flex-direction: row;
     gap: var(--keyboard-gap);
-
 }
 
 .key{
@@ -267,6 +267,7 @@ body.lightmode{
     border-radius: 0.2rem;
     border: none;
     order: 2;
+    user-select: none;
 }
 
 .key.special{
@@ -310,14 +311,6 @@ body.lightmode{
     gap: 1rem;
 }
 
-.stats-popup::before{
-    z-index: 90;
-    content: "";
-    inset: -50vw;
-    background: rgba(0, 0, 0, 0.2);
-    position: absolute;
-}
-
 .hide{
     display: none;
 }
@@ -347,7 +340,7 @@ body.lightmode{
 }
 
 .percent-stats .value{
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 .percent-stats .label{
@@ -356,8 +349,8 @@ body.lightmode{
 }
 
 /* media queries for responsive design */
-@media screen and (max-height: 850px){ 
+/* @media screen and (max-height: 850px){ 
     :root{
         font-size: 10px;
     }
-}
+} */

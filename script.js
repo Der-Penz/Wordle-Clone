@@ -1,18 +1,20 @@
 import { VALID_WORDS } from './dictionary.js'
 import { TARGET_WORDS } from './targetWords.js'
 
-$("body").on("change", function () {
-    toggleTheme();
+
+/**
+ * toggles between light and dark theme
+ */
+$("input[type=checkbox]").on("change", function () {
+    $("body").toggleClass("darkmode lightmode");
 });
 
-function toggleTheme(){
-    $("body").toggleClass("darkmode lightmode");
-}
-
 const WORD_LENGTH = 5
+const NUMBER_OF_GUESSES = 6;
 const gridLetters = $(".letter");
 const keyboard = $(".key");
-const TO_GUESS = TARGET_WORDS[Math.floor(Math.random() * TARGET_WORDS.length)].toUpperCase();
+// const TO_GUESS = TARGET_WORDS[Math.floor(Math.random() * TARGET_WORDS.length)].toUpperCase();
+const TO_GUESS = "stone".toUpperCase();
 var gameEnded = false;
 
 var fullClear = false;
@@ -27,26 +29,34 @@ var grid = [
             ["", "", "", "", ""],
            ]
 
+/**
+ * adds a letter
+ */
 function guessLetter(letter){
     if(letterIndex == WORD_LENGTH)
         return;
 
-    grid[guessIndex][letterIndex] = letter.toUpperCase();
     setLetter(letter);
-
     letterIndex++;
 }
 
+/**
+ * removes a letter
+ */
 function removeLetter(){
     if(letterIndex == 0)
         return;
 
     letterIndex--;
     setLetter("");
-    grid[guessIndex][letterIndex] = "";
 }
 
+/**
+ * sets the letter in the grid array and onto the actuall grid
+ */
 function setLetter(letter){
+    grid[guessIndex][letterIndex] = letter.toUpperCase();
+    
     let tile = $(gridLetters[guessIndex * WORD_LENGTH + letterIndex]);
 
     $(tile).attr("data", letter.toUpperCase());
@@ -54,22 +64,36 @@ function setLetter(letter){
     if(letter == "")
         return;
     scaleLetter(tile);
-}
+}   
 
-function colorLetter(which, color){
-    let cssVar = `var(--state-${color})`;
+/**
+ * colors the current row in the right colors and plays flip animation 
+ * @param {*} letterColorPair a pair index and color. e.G. 10 : "green" -> tenth letter element should be green
+ */
+function colorRow(letterColorPair){
+    for (const key in letterColorPair) {
+        let letter = gridLetters[key];
+        let cssVar = `var(--state-${letterColorPair[key]})`;
+        let sDelay = parseFloat($(":root").css("--animation-flip-duration")) * (key % WORD_LENGTH) * 0.9 + "s";
+        let delay = (parseFloat(sDelay) + (parseFloat($(":root").css("--animation-flip-duration")) / 2)) * 1000;
+        let fullDuration = delay + (parseFloat($(":root").css("--animation-flip-duration")) * 1000);
+        
+        $(letter).css("animationDelay", sDelay).addClass("flip")
 
-    flipLetter($(which).addClass("flip"));
+        setTimeout(() => {
+            $(letter).css({backgroundColor: cssVar,
+                borderColor: cssVar,
+                color: "var(--state-font)"}); 
+            colorKey($(letter).attr("data"), letterColorPair[key]);
+        }, delay);
 
-    setTimeout(() => {
-        $(which).css({backgroundColor: cssVar,
-            borderColor: cssVar,
-            color: "var(--state-font)"});    
-    }, 200);
+        setTimeout(() => {
+            $(letter).removeClass("flip");
+        }, fullDuration);
 
-    setTimeout(() => {
-        flipLetter($(which).removeClass("flip"));
-    }, 400);
+        if(key % WORD_LENGTH == 4)
+            return fullDuration;
+    }
 }
 
 function colorKey(whichLetter, color){
@@ -87,8 +111,10 @@ function colorKey(whichLetter, color){
     });
 }
 
+/**
+ * handles the logic for checking whats right and if the player lost or won 
+ */
 function submitGuess(){
-    
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
     if(guessedWord.length < WORD_LENGTH || !isValidWord(guessedWord)){
@@ -101,45 +127,45 @@ function submitGuess(){
         availableLetters[char] = availableLetters[char] ? (availableLetters[char] + 1) : 1;
     })
 
-    //first check the right ones
+    let letterColorPair = [];
+
+    //first check the green positions and save the remaining letters
     grid[guessIndex].forEach((letter,i) =>{
         if(letter == TO_GUESS.charAt(i)){
-            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "green");
-            colorKey(letter, "green");
+            letterColorPair[guessIndex * WORD_LENGTH + i] = "green";
+            availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
+        }
+        else
+            letterColorPair[guessIndex * WORD_LENGTH + i] = "grey";        
+    });
+
+    //check the remaining letters if the are on different position
+    grid[guessIndex].forEach((letter,i) =>{
+        if(availableLetters[letter] > 0){
+            letterColorPair[guessIndex * WORD_LENGTH + i] = "yellow";
             availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }
     });
 
-    //check the other ones after the on on the right spots to prevent bugs
-    grid[guessIndex].forEach((letter,i) =>{
-        if(letter == TO_GUESS.charAt(i)){}
-        else if(availableLetters[letter] > 0){
-            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "yellow");
-            colorKey(letter, "yellow");
-            availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
-        }else{
-            colorLetter(gridLetters[guessIndex * WORD_LENGTH + i], "grey");
-            colorKey(letter, "grey");
-        }
-    });
+    let wait = colorRow(letterColorPair);
 
     setTimeout(() => {
         if(guessedWord == TO_GUESS){
             jumpRow();
             gameEnded = true;
+            saveGame("1");
             return;
         }
 
         guessIndex++;
         letterIndex = 0;
     
-        if(guessIndex == 6){
-            alert("You lost, word was " + TO_GUESS);
+        if(guessIndex == NUMBER_OF_GUESSES){
+            alert(`You lost, ${TO_GUESS} was the correct word`);
             gameEnded = true;
+            saveGame("0");
         }
-    }, 600);
-    
-  
+    }, wait);
 }
 
 function handleKeyboardInput(pressedKey){
@@ -170,56 +196,116 @@ function handleMouseInput(letter){
     guessLetter(letter);
 }
 
+/**
+ * checks if a word is valid
+ */
 function isValidWord(word){
     return VALID_WORDS.includes(word.toLowerCase());
 }
 
+/**
+ * saves data from the game 
+ */
+function saveGame(isWin){
+    localStorage.setItem("played", localStorage.getItem("played") != null ? parseInt(localStorage.getItem("played")) + 1 : 1);
+    
+    if(isWin == "1"){
+        localStorage.setItem("wins", localStorage.getItem("wins") != null ? parseInt(localStorage.getItem("wins")) + 1 : 1);
+
+        let maxStreak = localStorage.getItem("maxStreak");
+        let streak = localStorage.getItem("streak");
+
+        if(streak == null)
+            streak = 1;
+        else
+            streak++;
+
+        localStorage.setItem("streak", streak);
+
+        if(maxStreak == null)
+            maxStreak == 0;
+        if(streak > maxStreak)
+            maxStreak = streak;
+
+        localStorage.setItem("maxStreak", maxStreak);
+    }else{
+        localStorage.setItem("streak", 0);
+    }
+}   
+
+/**
+ * calculates the stats new and shows the popup
+ */
+function toggleStats(){
+    let played = localStorage.getItem("played");
+    if(played == null)
+        played = 0;
+    $(".value[stats-type=played]").text(played);
+
+    let winPercentage = Number(parseInt(localStorage.getItem("wins")) / parseInt(localStorage.getItem("played")));
+    if(isNaN(winPercentage))
+        winPercentage = 0;
+    $(".value[stats-type=win]").text(winPercentage.toFixed(2) * 100);
+
+    let streak = localStorage.getItem("streak");
+    if(streak == null)
+        streak = 0;
+    $(".value[stats-type=streak]").text(streak);
+
+    let maxStreak = localStorage.getItem("maxStreak");
+    if(maxStreak == null)
+        maxStreak = 0;
+    $(".value[stats-type=maxStreak]").text(maxStreak);
+
+    $(".stats-popup").toggleClass("hide");
+}
+
+/**
+ * returns the current Letters in the row
+ */
 function getCurrentRow(){
     return gridLetters.slice(guessIndex * WORD_LENGTH, guessIndex * WORD_LENGTH + WORD_LENGTH);
 }
 
-function scaleLetter(tile){
-    $(tile).addClass("filled");
+/**
+ * scale animation for a given element
+ */
+function scaleLetter(element){
+    $(element).addClass("filled");
 
     setTimeout(() => {
-        $(tile).removeClass("filled");
-    }, 300);
+        $(element).removeClass("filled");
+    }, (parseFloat($(":root").css("--animation-jump-duration")) * 1000));
 }
 
-function flipLetter(tile){
-    $(tile).addClass("flip");
-
-    setTimeout(() => {
-        $(tile).removeClass("flip");
-    }, 600);
-}
-
+/**
+ * jump animation for the current row
+ */
 function jumpRow(){
-    $(gridLetters).removeClass("win");
-
     let toShake = getCurrentRow();
-    setTimeout(() => {
-        $(toShake).each(function (i, element) {
-            $(element).css("animationDelay", (i * 0.1) + "s").addClass("win");
-        });
-    }, 1);
+    let fullDuration = (parseFloat($(":root").css("--animation-jump-duration")));
+    $(toShake).each(function (i, element) {
+        $(element).css("animationDelay", (i * 0.1) + "s").addClass("win");
+        if(i == 4)
+            fullDuration = (fullDuration + (i * 0.1)) * 1000;
+    });
 
     setTimeout(() => {
         $(toShake).removeClass("win");
-    }, 700);
+    }, fullDuration);
 }
 
+/**
+ * wrong animation for the current row
+ */
 function shakeRow(){
-    $(gridLetters).removeClass("wrong");
-
     let toShake = getCurrentRow();
-    setTimeout(() => {
-        $(toShake).addClass("wrong");
-    }, 1);
+
+    $(toShake).addClass("wrong");
 
     setTimeout(() => {
         $(toShake).removeClass("wrong");
-    }, 600);
+    }, (parseFloat($(":root").css("--animation-wrong-duration")) * (parseInt($(":root").css("--animation-wrong-iterations"))) * 1000));
 }
 
 $("html").keyup(handleKeyboardInput);
@@ -228,17 +314,18 @@ $(".key").on("click", function () {
     if(gameEnded)
         return;
 
-    if($(this).hasClass("delete")){
+    if($(this).hasClass("delete"))
         removeLetter();
-        return;
-    }
-
-    if($(this).hasClass("enter")){
+    else if($(this).hasClass("enter"))
         submitGuess();
-        return;
-    }
+    else
+        handleMouseInput($(this).text());
 
-    handleMouseInput($(this).text());
+    $(this).addClass("filled");
+
+    setTimeout(() => {
+        $(this).removeClass("filled");
+    }, (parseFloat($(":root").css("--animation-jump-duration")) * 1000));
 });
 
 //under construction
@@ -259,6 +346,26 @@ $("html").keydown(function (e) {
         fullClear = true;
 });
 
-ScrollReveal().reveal('.letter', {interval: 30 });
-ScrollReveal().reveal('.key', {delay: 700, duration: 1000});
+$(".icon").on("click", function () {
 
+    let iconType = $(this).attr("iconType");
+
+    switch (iconType) {
+        case "stats":
+            toggleStats();
+            
+            break;
+        case "help":
+            alert("show help");
+            break;
+        case "settings":
+            alert("show settings");
+            break;
+    
+        default:
+            return;
+    }
+});
+
+ScrollReveal().reveal('.letter', {interval: 30});
+ScrollReveal().reveal('.key', {delay: 900, duration: 500});
