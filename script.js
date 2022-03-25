@@ -13,9 +13,10 @@ const WORD_LENGTH = 5
 const NUMBER_OF_GUESSES = 6;
 const gridLetters = $(".letter");
 const keyboard = $(".key");
-// const TO_GUESS = TARGET_WORDS[Math.floor(Math.random() * TARGET_WORDS.length)].toUpperCase();
-const TO_GUESS = "stone".toUpperCase();
+const TO_GUESS = TARGET_WORDS[getDaily()].toUpperCase();
 var gameEnded = false;
+var pauseInput = false;
+var indexSetted = true;
 
 var fullClear = false;
 var guessIndex = 0;
@@ -30,6 +31,14 @@ var grid = [
            ]
 
 /**
+ * returns the daily wordle
+ */
+function getDaily() {
+    let days = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
+    return (days * days) % TARGET_WORDS.length;
+}
+
+/**
  * adds a letter
  */
 function guessLetter(letter){
@@ -38,6 +47,7 @@ function guessLetter(letter){
 
     setLetter(letter);
     letterIndex++;
+    indexSetted = false;
 }
 
 /**
@@ -47,6 +57,11 @@ function removeLetter(){
     if(letterIndex == 0)
         return;
 
+    if(indexSetted){
+        setLetter("");
+        indexSetted = false;
+        return;
+    }
     letterIndex--;
     setLetter("");
 }
@@ -115,10 +130,14 @@ function colorKey(whichLetter, color){
  * handles the logic for checking whats right and if the player lost or won 
  */
 function submitGuess(){
+    if(pauseInput)
+        return;
+    pauseInput = true;
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
     if(guessedWord.length < WORD_LENGTH || !isValidWord(guessedWord)){
         shakeRow();
+        pauseInput = false;
         return;
     }
 
@@ -150,9 +169,10 @@ function submitGuess(){
     let wait = colorRow(letterColorPair);
 
     setTimeout(() => {
+        pauseInput = false;
         if(guessedWord == TO_GUESS){
-            jumpRow();
             gameEnded = true;
+            jumpRow();
             saveGame("1");
             return;
         }
@@ -179,6 +199,7 @@ function handleKeyboardInput(pressedKey){
     if (pressedKey.key === "Backspace" || pressedKey.key === "Delete") {
         if(fullClear){
             fullClear = false;
+            letterIndex = 5;
             while(letterIndex != 0)
                 removeLetter();
         }else
@@ -228,9 +249,18 @@ function saveGame(isWin){
             maxStreak = streak;
 
         localStorage.setItem("maxStreak", maxStreak);
+
+        let guessed = "guessedAt" + (guessIndex + 1);
+        localStorage.setItem(guessed, localStorage.getItem(guessed) != null ? parseInt(localStorage.getItem(guessed)) + 1 : 1);
     }else{
         localStorage.setItem("streak", 0);
     }
+
+    grid.forEach((element, i) => {
+        let word = element.join("");        
+
+        localStorage.setItem("row" + i, word);
+    });
 }   
 
 /**
@@ -293,6 +323,10 @@ function jumpRow(){
     setTimeout(() => {
         $(toShake).removeClass("win");
     }, fullDuration);
+
+    setTimeout(() => {
+        toggleStats();
+    }, fullDuration + 150);
 }
 
 /**
@@ -328,18 +362,20 @@ $(".key").on("click", function () {
     }, (parseFloat($(":root").css("--animation-jump-duration")) * 1000));
 });
 
-//under construction
-//selectable index
-// $(".letter").on("click", function (e) {
-//     if(gameEnded)
-//         return;
-//     let i = $(e.target).attr("index");
-
-//     if(!(i <= guessIndex * WORD_LENGTH + WORD_LENGTH && i > guessIndex * WORD_LENGTH))
-//         return;
-    
-//     letterIndex = i - 1;
-// });
+/**
+ * selects a letter on click
+ */
+$(".letter").on("click", function (e) {
+    if(gameEnded)
+        return;
+    let i = $(e.target).attr("index");
+    if(!(i < guessIndex * WORD_LENGTH + WORD_LENGTH && i >= guessIndex * WORD_LENGTH)){
+        console.log(i);
+        return;
+    }
+    indexSetted = true;
+    letterIndex = i % WORD_LENGTH;
+});
 
 $("html").keydown(function (e) { 
     if(e.key == "Control")
