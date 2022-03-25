@@ -7,6 +7,20 @@ import { TARGET_WORDS } from './targetWords.js'
  */
 $("input[type=checkbox]").on("change", function () {
     $("body").toggleClass("darkmode lightmode");
+    localStorage.setItem("theme", $("body").attr("class"));
+});
+
+$(document).ready(function () {
+    let theme = localStorage.getItem("theme");
+    if(theme == null)
+        theme = "darkmode";
+    if(theme == "darkmode"){
+        $("body").removeClass("lightmode");
+        $("body").addClass("darkmode");
+    }else{
+        $("body").removeClass("darkmode");
+        $("body").addClass("lightmode");
+    }
 });
 
 const WORD_LENGTH = 5
@@ -133,6 +147,7 @@ function submitGuess(){
     if(pauseInput)
         return;
     pauseInput = true;
+
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
     if(guessedWord.length < WORD_LENGTH || !isValidWord(guessedWord)){
@@ -380,6 +395,11 @@ $(".letter").on("click", function (e) {
 $("html").keydown(function (e) { 
     if(e.key == "Control")
         fullClear = true;
+});
+
+$("html").keyup(function (e) { 
+    if(e.key == "Control")
+        fullClear = false;
 });
 
 $(".icon").on("click", function () {
