@@ -147,7 +147,6 @@ function submitGuess(){
     if(pauseInput)
         return;
     pauseInput = true;
-
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
 
     if(guessedWord.length < WORD_LENGTH || !isValidWord(guessedWord)){
