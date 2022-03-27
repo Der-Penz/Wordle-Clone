@@ -15,7 +15,7 @@
     --dark-state-grey: #2c2c2c;
     --dark-state-font: #fffffc;
 
-    --grid-size: clamp(3rem, 3rem + 3vw, 5rem);
+    --grid-size: clamp(2.5rem, 2.5rem + 3vw, 5rem);
     --keyboard-gap: clamp(0.05rem, 0.05rem + 0.6vw, 0.5rem);
     --key-height: clamp(1.7rem, 1.7rem + 3vw, 4rem);
     --key-width: calc( 3/4 * var(--key-height));
@@ -36,7 +36,13 @@
 body, html{
     background: var(--bg-primary);
     color: var(--font-primary);
-    overflow: hidden;
+    overflow-x: hidden;
+    width: 100vw;
+    /* height: 100vh; */
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 body.darkmode{
@@ -79,7 +85,7 @@ body.lightmode{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3rem;
+    gap: clamp(0.5rem, 0.5rem + 1vw, 3rem);
 }
 
 .grid-container{
@@ -90,7 +96,7 @@ body.lightmode{
     display: grid;
     grid-template-columns: repeat(5, var(--grid-size));
     grid-template-rows: repeat(6, var(--grid-size));
-    gap: 0.5rem;
+    gap: calc(var(--keyboard-gap) + 0.05rem);
 }
 
 .keyboard-container{
@@ -234,6 +240,18 @@ body.lightmode{
     }
 }
 
+.toast-center{
+    position: absolute;
+    top: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.toast-center .toast{
+    opacity: 1 !important;
+    box-shadow: none !important;
+}
+
 /* keyboard styling */
 .keyboard-row{
     display: flex;
@@ -258,6 +276,7 @@ body.lightmode{
     border-radius: 0.2rem;
     border: none;
     order: 2;
+    z-index: 100;
     user-select: none;
 }
 
@@ -267,7 +286,7 @@ body.lightmode{
 }
 
 .enter{
-    font-size: clamp(0.8rem, 0.8rem + 4vw, 1.7rem);
+    font-size: clamp(0.5rem, 0.5rem + 2vw, 1.7rem);
     order: 1;
 }
 
@@ -286,13 +305,14 @@ body.lightmode{
 /* popup */
 .stats-popup{
     position: absolute;
-    width: 25rem;
+    width: 28rem;
     height: 30rem;
     left: 50%;
     top: 50%;
     transform: translateX(-50%) translateY(-50%);
     border-radius: 1rem;
-    background: var(--state-grey);
+    background: var(--bg-primary);
+    border: 0.2rem solid var(--bg-secondary);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -301,11 +321,18 @@ body.lightmode{
     padding: 1rem;
     gap: 1rem;
     transition: opacity 0.3s;
-    color: var(--state-font);
+    color: var(--font-primary);
+    pointer-events: auto;
+    box-shadow: 0.1rem 0.1rem 0.5rem var(--state-grey),
+                -0.1rem -0.1rem 0.5rem var(--state-grey),
+                0.1rem -0.1rem 0.5rem var(--state-grey),
+                -0.1rem 0.1rem 0.5rem var(--state-grey);
+
 }
 
 .hide{
    opacity: 0;
+   pointer-events: none;
 }
 
 .headline{
@@ -339,4 +366,29 @@ body.lightmode{
 .percent-stats .label{
     font-size: 1rem;
     font-weight: 700;
+}
+
+.guess-stats-container{
+    width: 80%;
+    height: 10rem;
+}
+
+
+/* media queries */
+@media screen and (max-height: 900px) {
+    :root{
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-height: 700px) {
+    :root{
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-height: 700px) {
+    :root{
+        font-size: 10px;
+    }
 }

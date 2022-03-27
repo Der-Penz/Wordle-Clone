@@ -8,9 +8,15 @@
 
     <link rel="icon" type="image/x-icon" href="favicon.png">
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.css" rel="stylesheet"/>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/scrollreveal"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
+    <script src="https://unpkg.com/scrollreveal" defer></script>
+      
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.js" defer></script>
+
+    <script src="script.js" type="module" defer></script>
+      
 
 </head>
 <body class="darkmode">
@@ -180,13 +186,11 @@
 
     <h2 class="headline">Guess distribution</h2>
 
-    <div class="guess-stats-container">
-      <div class="guess-stats"></div>
-    </div>
+    <canvas id="guessChart" height="180"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chart.js"></script>
 
   </div>
-
-  <script src="script.js" type="module"></script>
 
 </body>
 </html>
