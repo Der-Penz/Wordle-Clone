@@ -1,11 +1,10 @@
-import { VALID_WORDS } from './dictionary.js'
-import { TARGET_WORDS } from './targetWords.js'
-
+import { VALID_WORDS } from './dictionary.js';
+import { TARGET_WORDS } from './targetWords.js';
 
 /**
  * toggles between light and dark theme
  */
-$("input[type=checkbox]").on("change", function () {
+$("input[type=checkbox].theme").on("change", function () {
     $("body").toggleClass("darkmode lightmode");
     localStorage.setItem("theme", $("body").attr("class"));
 });
@@ -35,7 +34,8 @@ var pauseInput = false;
 var indexSetted = true;
 var gameMode = "daily";
 var ctx = document.getElementById('guessChart');
-var myChart;
+var guessChart;
+var guesses = [];
 
 var fullClear = false;
 var guessIndex = 0;
@@ -59,25 +59,49 @@ function checkForDaily(){
               "info",
               () => playRandom());
     gameEnded = true;
-
+    guessIndex = 5;
+    letterIndex = 0;
     let cookies = document.cookie.replace("playedDaily=true; ", "").split("; ");
+    let states = cookies.pop().replace("states=", "");
 
     cookies.forEach((row, i) => {
         let word = row.split("=")[1];
         for (let j = 0; j < word.length; j++) {
             guessLetter(word.charAt(j));
         }
-        guessIndex++;
+        
+        guessIndex--;
         letterIndex = 0;
     });
-    
-    console.table(grid);
+
+    $(gridLetters).each(function (i, element) {
+        let state = states.charAt(i);
+        let cssColor = "var(--state-";
+        switch (state) {
+            case "g":
+                cssColor += "green)";
+                break;
+            case "y":
+                cssColor += "yellow)";
+                break;
+            case "r":
+                cssColor += "grey)";
+                break;
+            case "n":
+                cssColor = "var(--bg-primary)";
+                break;
+        }
+
+        $(element).css("backgroundColor", cssColor);
+        
+    });
 }
 
 setTimeout(() => {
     checkForDaily();
     initChart();
-}, 1000);
+
+}, 20 * 60);
 
 
 /**
@@ -94,7 +118,6 @@ function getDaily(){
 function guessLetter(letter){
     if(letterIndex == WORD_LENGTH)
         return;
-
     setLetter(letter);
     letterIndex++;
     indexSetted = false;
@@ -104,15 +127,17 @@ function guessLetter(letter){
  * removes a letter
  */
 function removeLetter(){
-    if(letterIndex == 0)
-        return;
+
 
     if(indexSetted){
         setLetter("");
         indexSetted = false;
         return;
     }
-    letterIndex--;
+
+    if(letterIndex != 0)
+         letterIndex--;
+    
     setLetter("");
 }
 
@@ -148,7 +173,7 @@ function colorRow(letterColorPair){
         setTimeout(() => {
             $(letter).css({backgroundColor: cssVar,
                 borderColor: cssVar,
-                color: "var(--state-font)"}); 
+                color: "var(--state-font)"}).attr("state", letterColorPair[key]); 
             colorKey($(letter).attr("data"), letterColorPair[key]);
         }, delay);
 
@@ -187,18 +212,16 @@ function showToast(message, duration = "1500", type = "error", onClick = null){
         "progressBar": true,
         "positionClass": "toast-center",
         "preventDuplicates": true,
-        "onclick": null,
+        "onclick": onClick,
         "showDuration": "200",
-        "hideDuration": "200",
-        "timeOut": duration,
+        "hideDuration": "400",
+        "timeOut": duration.toString(),
         "extendedTimeOut": "500",
         "showEasing": "swing",
         "hideEasing": "linear",
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     }
-
-    toastr.options.onclick = onClick;
 
     if(type == "error")
         toastr.error(message);
@@ -219,7 +242,7 @@ function submitGuess(){
     pauseInput = true;
 
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
-    console.log(guessedWord);
+
     if(guessedWord.length < WORD_LENGTH){
         shakeRow();
         showToast("Word to short");
@@ -267,7 +290,7 @@ function submitGuess(){
             gameEnded = true;
             jumpRow();
             saveGame("1");
-            showToast('<div style="text-align: center">You won GG</div>', "3000", "success");
+            showToast('<div style="text-align: center">You won GG<br>Press to play a random Wordle?</div>', "3000", "success", () => {playRandom(); togglePopup("stats"); });
             return;
         }
 
@@ -277,7 +300,7 @@ function submitGuess(){
         if(guessIndex == NUMBER_OF_GUESSES){
             gameEnded = true;
             saveGame("0");
-            showToast(`<div style="text-align: center">You lost: <p style="font-weight: 900">${TO_GUESS}</p> was the correct word</div>`, "5000");
+            showToast(`<div style="text-align: center">You lost: <p style="font-weight: 900">${TO_GUESS}</p> was the correct word<br>Press to play a random Wordle?</div>`, "5000", undefined, () => playRandom());
         }
     }, wait);
 }
@@ -286,6 +309,9 @@ function handleKeyboardInput(pressedKey){
     if(gameEnded)
         return;
 
+    if(pressedKey.key == "Control")
+        fullClear = false;
+        
     if (pressedKey.key === "Enter") {
         submitGuess()
         return;
@@ -387,16 +413,37 @@ function saveGame(isWin){
 
     document.cookie = "playedDaily=true; " + expires;
     grid.forEach((element, i) => {
-        let word = element.join("");      
+        let word = element.join("");
 
         document.cookie = `row${i}=${word}; ${expires} `;
     });
+    let states = "";
+
+    $(gridLetters).each((i, element) => {
+        let state =  $(element).attr("state");
+
+        switch (state) {
+            case "green":
+                states += "g";
+                break;
+            case "yellow":
+                states += "y";
+                break;
+            case "grey":
+                states += "r";
+                break;
+            case "none":
+                states += "n";
+                break;
+        }
+    });
+    document.cookie = `states=${states}; ${expires} `;
 }   
 
 /**
  * calculates the stats new and shows the popup
  */
-function toggleStats(){
+function updateStats(){
     let played = localStorage.getItem("played");
     if(played == null)
         played = 0;
@@ -418,18 +465,28 @@ function toggleStats(){
         maxStreak = 0;
     $(".value[stats-type=maxStreak]").text(maxStreak);
 
-    $(".stats-popup").toggleClass("hide");
+    for (let i = 0; i < 6; i++) {
+        guesses[i] = localStorage.getItem("guessedAt" + (i + 1)); 
+        guessChart.data.datasets[0].data[i] = guesses[i];
+    }
+    guessChart.update();
+}
+
+function togglePopup(popup){
+    $(`.popup[${popup}]`).toggleClass("hide");
+    $(`.popup:not([${popup}])`).addClass("hide");
+
+    if(popup == "stats")
+        updateStats();
 }
 
 function initChart(){
-   
-    let guesses = [];
-
-    for (let i = 1; i < 7; i++) {
-        guesses.push(localStorage.getItem("guessedAt" + i) == null ? 0 : localStorage.getItem("guessedAt" + i));  
+    
+    for (let i = 0; i < 6; i++) {
+        guesses[i] = localStorage.getItem("guessedAt" + (i + 1));  
     }
 
-    myChart = new Chart(ctx, {
+    guessChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['1', '2', '3', '4', '5', '6'],
@@ -501,7 +558,7 @@ function jumpRow(){
     }, fullDuration);
 
     setTimeout(() => {
-        toggleStats();
+        togglePopup("stats");
     }, fullDuration + 150);
 }
 
@@ -519,6 +576,28 @@ function shakeRow(){
 }
 
 $("html").keyup(handleKeyboardInput);
+
+$("html").keydown(function (e) { 
+    if(e.key == "Control")
+        fullClear = true;
+
+        
+
+
+
+
+
+
+
+
+
+saveGame("0");
+
+
+
+
+
+});
 
 $(".key").on("click", function () {
     if(gameEnded)
@@ -551,34 +630,19 @@ $(".letter").on("click", function (e) {
     letterIndex = i % WORD_LENGTH;
 });
 
-$("html").keydown(function (e) { 
-    if(e.key == "Control")
-        fullClear = true;
-});
-
-$("html").keyup(function (e) { 
-    if(e.key == "Control")
-        fullClear = false;
-});
-
 $(".icon").on("click", function () {
-    let iconType = $(this).attr("iconType");
+    togglePopup($(this).attr("iconType"));
+});
 
-    switch (iconType) {
-        case "stats":
-            toggleStats();
-            
-            break;
-        case "help":
-            alert("show help");
-            break;
-        case "settings":
-            alert("show settings");
-            break;
-    
-        default:
-            return;
-    }
+$(".button[random]").on("click", function () {
+    playRandom();
+    togglePopup("settings");
+    document.activeElement.blur();
+});
+
+$(".button[switchEnter]").on("click", function () {
+    $(".enter, .delete").toggleClass("switch");
+
 });
 
 ScrollReveal().reveal('.letter', {interval: 30});

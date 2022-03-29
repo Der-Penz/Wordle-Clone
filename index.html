@@ -12,10 +12,12 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
     <script src="https://unpkg.com/scrollreveal" defer></script>
-      
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.js" defer></script>
-
+    
     <script src="script.js" type="module" defer></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.js" defer></script>
       
 
 </head>
@@ -58,7 +60,7 @@
     </div>
 
     <div class="icon">
-      <input type="checkbox">
+      <input type="checkbox" class="theme">
 
       <svg viewBox="0 0 20 20">
         <path class="moon"
@@ -80,36 +82,36 @@
   <div class="game">
 
     <div class="grid-container">
-        <div class="letter" index="0" data=""></div>
-        <div class="letter" index="1" data=""></div>
-        <div class="letter" index="2" data=""></div>
-        <div class="letter" index="3" data=""></div>
-        <div class="letter" index="4" data=""></div>
-        <div class="letter" index="5" data=""></div>
-        <div class="letter" index="6" data=""></div>
-        <div class="letter" index="7" data=""></div>
-        <div class="letter" index="8" data=""></div>
-        <div class="letter" index="9" data=""></div>
-        <div class="letter" index="10" data=""></div>
-        <div class="letter" index="11" data=""></div>
-        <div class="letter" index="12" data=""></div>
-        <div class="letter" index="13" data=""></div>
-        <div class="letter" index="14" data=""></div>
-        <div class="letter" index="15" data=""></div>
-        <div class="letter" index="16" data=""></div>
-        <div class="letter" index="17" data=""></div>
-        <div class="letter" index="18" data=""></div>
-        <div class="letter" index="19" data=""></div>
-        <div class="letter" index="20" data=""></div>
-        <div class="letter" index="21" data=""></div>
-        <div class="letter" index="22" data=""></div>
-        <div class="letter" index="23" data=""></div>
-        <div class="letter" index="24" data=""></div>
-        <div class="letter" index="25" data=""></div>
-        <div class="letter" index="26" data=""></div>
-        <div class="letter" index="27" data=""></div>
-        <div class="letter" index="28" data=""></div>
-        <div class="letter" index="29" data=""></div>
+        <div class="letter" index="0" data="" state="none"></div>
+        <div class="letter" index="1" data="" state="none"></div>
+        <div class="letter" index="2" data="" state="none"></div>
+        <div class="letter" index="3" data="" state="none"></div>
+        <div class="letter" index="4" data="" state="none"></div>
+        <div class="letter" index="5" data="" state="none"></div>
+        <div class="letter" index="6" data="" state="none"></div>
+        <div class="letter" index="7" data="" state="none"></div>
+        <div class="letter" index="8" data="" state="none"></div>
+        <div class="letter" index="9" data="" state="none"></div>
+        <div class="letter" index="10" data="" state="none"></div>
+        <div class="letter" index="11" data="" state="none"></div>
+        <div class="letter" index="12" data="" state="none"></div>
+        <div class="letter" index="13" data="" state="none"></div>
+        <div class="letter" index="14" data="" state="none"></div>
+        <div class="letter" index="15" data="" state="none"></div>
+        <div class="letter" index="16" data="" state="none"></div>
+        <div class="letter" index="17" data="" state="none"></div>
+        <div class="letter" index="18" data="" state="none"></div>
+        <div class="letter" index="19" data="" state="none"></div>
+        <div class="letter" index="20" data="" state="none"></div>
+        <div class="letter" index="21" data="" state="none"></div>
+        <div class="letter" index="22" data="" state="none"></div>
+        <div class="letter" index="23" data="" state="none"></div>
+        <div class="letter" index="24" data="" state="none"></div>
+        <div class="letter" index="25" data="" state="none"></div>
+        <div class="letter" index="26" data="" state="none"></div>
+        <div class="letter" index="27" data="" state="none"></div>
+        <div class="letter" index="28" data="" state="none"></div>
+        <div class="letter" index="29" data="" state="none"></div>
     </div>
 
     <div class="keyboard-container">
@@ -156,7 +158,7 @@
 
   </div>
 
-  <div class="stats-popup hide">
+  <div class="popup hide" stats>
 
     <h2 class="headline">statistics</h2>
 
@@ -187,8 +189,77 @@
     <h2 class="headline">Guess distribution</h2>
 
     <canvas id="guessChart" height="180"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="chart.js"></script>
+
+
+
+  </div>
+
+  <div class="popup hide" settings>
+
+    <h2 class="headline">Settings</h2>
+      
+    <button class="button" switchEnter>Switch enter and return</button>
+    <button class="button" random>Play a random Wordle</button>
+
+
+    <h2 class="headline">Credits</h2>
+    
+    <h4>made by DerPenz</h4>
+    
+    <h5>used Tools:</h5>
+
+    <ul class="credits-list">
+      <li><a href="https://github.com/CodeSeven/toastr" target="blank">Toastr.js</a></li>
+      <li><a href="https://scrollrevealjs.org/" target="blank">scrollreveal.js</a></li>
+      <li><a href="https://www.chartjs.org/" target="blank">Chart.js</a></li>
+    </ul>
+
+  </div>
+
+  <div class="popup hide" help>
+
+    <h2 class="headline">How to play</h2>
+
+    <ul class="help-list" item>
+      <li>Guess the correct Wordle in 6 tries.</li>
+      <li>Each guess must be a valid Word</li>
+      <li>Press Enter to submit</li>
+      <li>Color of the tiles will change to show you how close your guess was</li>
+      <li>You can play a daily ranked Wordle or just a random one</li>
+    </ul>
+
+    <h2 class="headline">Examples</h2>
+
+    <ul class="help-list">
+
+      <div class="word-example">      
+        <div class="example" correct>S</div>
+        <div class="example" notIn>T</div>
+        <div class="example" notIn>O</div>
+        <div class="example" notIn>N</div>
+        <div class="example" notIn>E</div>
+      </div>
+      <li>The letter <strong>S</strong> is in the correct spot</li>
+
+      <div class="word-example">      
+        <div class="example" notIn>T</div>
+        <div class="example" wrong>I</div>
+        <div class="example" notIn>M</div>
+        <div class="example" notIn>E</div>
+        <div class="example" notIn>S</div>
+      </div>
+      <li>The letter <strong>I</strong> is in the word but in the wrong spot.</li>
+      
+      <div class="word-example">      
+        <div class="example" correct>C</div>
+        <div class="example" notIn>L</div>
+        <div class="example" correct>U</div>
+        <div class="example" correct>E</div>
+        <div class="example" correct>S</div>
+      </div>
+      <li>The letter <strong>L</strong> is not in the word in any spot.</li>
+    
+    </ul>
 
   </div>
 

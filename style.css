@@ -121,6 +121,7 @@ body.lightmode{
     flex: 0 1 2.3rem;
     position: relative;
     z-index: 110;
+    cursor: pointer;
 }
 
 .icon svg{
@@ -142,20 +143,20 @@ body.lightmode{
     fill: var(--bg-secondary);
 }
 
-.icon input[type="checkbox"]{
+.icon input[type="checkbox"].theme{
     position: absolute;
     width: 100%;
     height: 100%;
     opacity: 0;
 }
 
-.icon input[type="checkbox"] + svg .moon,
-.icon input[type="checkbox"]:checked + svg .sun{
+.icon input[type="checkbox"].theme + svg .moon,
+.icon input[type="checkbox"].theme:checked + svg .sun{
     display: unset;
 }
 
-.icon input[type="checkbox"] + svg .sun,
-.icon input[type="checkbox"]:checked + svg .moon{
+.icon input[type="checkbox"].theme + svg .sun,
+.icon input[type="checkbox"].theme:checked + svg .moon{
     display: none;
 }
 
@@ -165,6 +166,7 @@ body.lightmode{
     border-radius: 0.2rem;
     position: relative;
     color: var(--font-primary);
+    cursor: pointer;
 }
 
 .letter::before{
@@ -278,6 +280,7 @@ body.lightmode{
     order: 2;
     z-index: 100;
     user-select: none;
+    cursor: pointer;
 }
 
 .key.special{
@@ -294,16 +297,16 @@ body.lightmode{
     order: 3;
 }
 
-.switch .enter{
+.switch.enter{
     order: 3;
 }
 
-.switch .delete{
+.switch.delete{
     order: 1;
 }
 
 /* popup */
-.stats-popup{
+.popup{
     position: absolute;
     width: 28rem;
     height: 30rem;
@@ -373,6 +376,110 @@ body.lightmode{
     height: 10rem;
 }
 
+.help-list{
+    margin: 0rem 2rem;
+    font-size: 1.1rem;
+    line-height: 150%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    list-style: none;
+}
+
+.help-list li::first-letter{
+    font-weight: bold;
+}
+
+.help-list[item] li::before{
+    content: "- ";
+}
+
+.word-example{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    user-select: none;
+}
+
+.example{
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.2rem;
+    font-weight: 550;
+    font-size: 1.5rem;
+}
+
+.example[correct]{
+    background-color: var(--state-green);
+}
+
+.example[wrong]{
+    background-color: var(--state-yellow);
+}
+
+.example[notIn]{
+    background-color: var(--state-grey);
+}
+
+.button{
+    background-color: transparent;
+    padding: 0.4rem;
+    border: 0.2rem solid var(--font-primary);
+    border-radius: 0.4rem;
+    color: var(--font-primary);
+    opacity: 1;
+    font-size: 1rem;
+    transition: all 0.1s ease-out;
+    cursor: pointer;
+}
+
+.button:hover,
+.button:focus{
+    background-color: var(--font-primary);
+    color: var(--bg-secondary);
+    font-weight: bold;
+}
+
+.button:last-of-type{
+    margin-bottom: 3rem;
+}
+
+h5,h4{
+    color: var(--bg-secondary);
+}
+
+.credits-list{
+    margin: 0rem 2rem;
+    font-size: 0.9rem;
+    line-height: 150%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    list-style: none;   
+}
+
+.credits-list a{
+    text-decoration: none;
+}
+
+.random-button{
+    border: 0.2rem solid var(--bg-secondary);
+    border-radius: 0.3rem;
+    font-size: 1.5rem;
+    background: var(--state-green);
+    padding: 0.6rem 0.3rem;
+    color: var(--font-primary);
+    font-weight: bolder;
+}
+
+.random-button:hover{
+    border-color: var(--bg-primary);
+}   
 
 /* media queries */
 @media screen and (max-height: 900px) {
