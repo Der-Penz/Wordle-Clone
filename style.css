@@ -410,6 +410,7 @@ body.lightmode{
     border-radius: 0.2rem;
     font-weight: 550;
     font-size: 1.5rem;
+    color: var(--state-font);
 }
 
 .example[correct]{
