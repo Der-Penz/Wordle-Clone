@@ -268,7 +268,7 @@ function submitGuess(){
     })
 
     let letterColorPair = [];
-    
+
     //first check the green positions and save the remaining letters
     grid[guessIndex].forEach((letter,i) =>{
         if(letter == TO_GUESS.charAt(i)){
@@ -278,10 +278,10 @@ function submitGuess(){
         else
             letterColorPair[guessIndex * WORD_LENGTH + i] = "grey";        
     });
-
+    
     //check the remaining letters if the are on different position
     grid[guessIndex].forEach((letter,i) =>{
-        if(availableLetters[letter] > 0){
+        if(availableLetters[letter] > 0 && letterColorPair[guessIndex * WORD_LENGTH + i] != "green"){
             letterColorPair[guessIndex * WORD_LENGTH + i] = "yellow";
             availableLetters[letter] = availableLetters[letter] ? (availableLetters[letter] - 1) : 0;
         }
@@ -630,6 +630,7 @@ $(".button[random]").on("click", function () {
 
 $(".button[switchEnter]").on("click", function () {
     $(".enter, .delete").toggleClass("switch");
+    document.activeElement.blur();
 });
 
 $(".button[clearStats]").on("click", function () {
@@ -644,7 +645,8 @@ $(".button[clearStats]").on("click", function () {
         }
     }
       
-    deleteAllCookies()
+    deleteAllCookies();
+    document.activeElement.blur();
 });
 
 ScrollReveal().reveal('.letter', {interval: 30});
