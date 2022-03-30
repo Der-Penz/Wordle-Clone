@@ -62,12 +62,17 @@ function checkForDaily(){
     guessIndex = 5;
     letterIndex = 0;
     let cookies = document.cookie.replace("playedDaily=true; ", "").split("; ");
-    let states = cookies.pop().replace("states=", "");
+    let states = "";
 
     cookies.forEach((row, i) => {
         let word = row.split("=")[1];
-        for (let j = 0; j < word.length; j++) {
-            guessLetter(word.charAt(j));
+        if(word.length > 5)
+            states = word;
+        else{
+            guessIndex = row.split("=")[0].substring(row.split("=")[0].length - 1, row.split("=")[0].length);
+            for (let j = 0; j < word.length; j++) {
+                guessLetter(word.charAt(j));
+            }
         }
         
         guessIndex--;
@@ -92,8 +97,8 @@ function checkForDaily(){
                 break;
         }
 
-        $(element).css("backgroundColor", cssColor);
-        
+        $(element).css({"backgroundColor": cssColor,
+                        "border-color": cssColor == "var(--bg-primary)"? "var(--bg-secondary)" : cssColor,});      
     });
 }
 
@@ -580,23 +585,6 @@ $("html").keyup(handleKeyboardInput);
 $("html").keydown(function (e) { 
     if(e.key == "Control")
         fullClear = true;
-
-        
-
-
-
-
-
-
-
-
-
-saveGame("0");
-
-
-
-
-
 });
 
 $(".key").on("click", function () {
@@ -642,7 +630,21 @@ $(".button[random]").on("click", function () {
 
 $(".button[switchEnter]").on("click", function () {
     $(".enter, .delete").toggleClass("switch");
+});
 
+$(".button[clearStats]").on("click", function () {
+    localStorage.clear();
+    const deleteAllCookies = () => {
+        const cookies = document.cookie.split(";");
+      
+        for (const cookie of cookies) {
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+    }
+      
+    deleteAllCookies()
 });
 
 ScrollReveal().reveal('.letter', {interval: 30});
