@@ -20,8 +20,6 @@ $(document).ready(function () {
         $("body").removeClass("darkmode");
         $("body").addClass("lightmode");
     }
-
-    
 });
 
 const WORD_LENGTH = 5
@@ -50,6 +48,20 @@ var grid = [
            ]
 
 function checkForDaily(){
+    const params = new URLSearchParams(window.location.search);
+
+    if(params.get("wordle") || undefined){
+        gameMode = "challenge";
+
+        let code = params.get("wordle").split(".");
+        
+        TO_GUESS = code.reduce((word, n) => {
+            return word += String.fromCharCode(parseInt(n));
+        }, "").toUpperCase().split("\x00")[0];
+        gameEnded = false; 
+        return;
+    }	
+
     if(!document.cookie.includes("playedDaily=true")){
         gameEnded = false;
         return;
@@ -247,7 +259,7 @@ function submitGuess(){
     pauseInput = true;
 
     let guessedWord = grid[guessIndex].reduce((word, letter) => word += letter);
-
+    
     if(guessedWord.length < WORD_LENGTH){
         shakeRow();
         showToast("Word to short");
@@ -288,10 +300,12 @@ function submitGuess(){
     });
 
     let wait = colorRow(letterColorPair);
-
+    
     setTimeout(() => {
         pauseInput = false;
+        
         if(guessedWord == TO_GUESS){
+            
             gameEnded = true;
             jumpRow();
             saveGame("1");
@@ -339,6 +353,8 @@ function handleKeyboardInput(pressedKey){
 }
 
 function handleMouseInput(letter){
+    if(gameEnded)
+        return; 
     guessLetter(letter);
 }
 
@@ -381,7 +397,7 @@ function playRandom(){
  * saves data from the game 
  */
 function saveGame(isWin){
-    if(gameMode == "random")
+    if(gameMode != "daily" )
         return;
 
     localStorage.setItem("played", localStorage.getItem("played") != null ? parseInt(localStorage.getItem("played")) + 1 : 1);
@@ -647,6 +663,46 @@ $(".button[clearStats]").on("click", function () {
       
     deleteAllCookies();
     document.activeElement.blur();
+});
+
+$(".button[ownWordle]").on("click", function () {
+    gameEnded = true;
+});
+
+$(".button[ownWordle]").focusout(function (){
+    gameEnded = false;
+})
+
+$(".button[copyLink]").on("click", function () {
+    const wordle = $(".button[ownWordle]").val();
+    const format = "";
+    if(wordle.length != 5){
+        showToast("Please enter a 5 letter word", undefined, "error");
+        return;
+    }
+
+    if(!/^[a-zA-Z]+$/.test(wordle)){
+        showToast("Please enter valid characters", undefined, "error");
+        return;
+    }
+
+    if(!isValidWord(wordle)){
+        showToast("Please enter a valid word", undefined, "error");
+        return;
+    }
+
+    let code = "";
+    for (const char of wordle) {
+        code += char.charCodeAt(0) + ".";
+    }
+    
+    const URL = `${window.location.href.split("?")[0]}?wordle=${code}`;
+    navigator.clipboard.writeText(URL);
+
+    showToast("Copied URL clipboard", undefined, "success");
+
+    document.activeElement.blur();
+    
 });
 
 ScrollReveal().reveal('.letter', {interval: 30});

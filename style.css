@@ -435,6 +435,7 @@ body.lightmode{
     font-size: 1rem;
     transition: all 0.1s ease-out;
     cursor: pointer;
+    text-align: center;
 }
 
 .button:hover,
@@ -442,10 +443,6 @@ body.lightmode{
     background-color: var(--font-primary);
     color: var(--bg-secondary);
     font-weight: bold;
-}
-
-.button:last-of-type{
-    margin-bottom: 3rem;
 }
 
 h5,h4{
